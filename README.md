@@ -1,3 +1,17 @@
+> **私有部署仓库 · 禁止再分发**
+>
+> 本仓库是 VoCat SIP Server 插件的**私有部署副本**，仅供维护者本人在
+> 已获授权的非商业研究 / 硬件开发场景下自行构建与部署。
+>
+> 本仓库**不是分发渠道** —— 不对外提供任何二进制、镜像或源码归档。
+> 任何获得本副本的一方，均须自行满足上游 **Vocat Research & Evaluation
+> License v1.0** 的全部条件（非商业限制、地理授权、评估期、SIM/eSIM 与
+> MCC/MNC 限制、不得规避技术保护措施等）。
+>
+> 相对上游所做的**实质性修改清单**见 [NOTICE.md](./NOTICE.md)。
+
+---
+
 # VoCat SIP Server Plugin
 
 一个为 VoCat 提供 SIP/PBX 功能的插件，使 Zoiper、Groundwire 等 SIP 客户端能够通过蜂窝调制解调器拨打/接收电话和收发短信。

@@ -83,4 +83,7 @@ jobs:
           path: |
             vocat-sipserver-arm64.zip
             SHA256SUMS.txt
-          retention-days: 30
+          # Short retention: this is a private deployment build, not a
+          # distribution channel. Artifacts are pulled down immediately after
+          # the run and should not linger on GitHub.
+          retention-days: 1

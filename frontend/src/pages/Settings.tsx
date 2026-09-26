@@ -217,19 +217,19 @@ export default function Settings() {
         <div style={{background: 'var(--bg-tertiary)', borderRadius: 'var(--radius)', padding: 16, fontSize: 13, overflow: 'auto'}}>
           <pre style={{margin: 0, fontFamily: 'monospace', color: 'var(--text-primary)'}}>{`# Zoiper / Groundwire 配置示例
 
-服务器地址: {formData.listen_addr === '0.0.0.0' ? 'YOUR_SERVER_IP' : formData.listen_addr}
-SIP 端口: {formData.sip_port}
-传输协议: {formData.enable_tls ? 'TLS' : 'UDP'}
+服务器地址: ${formData.listen_addr === '0.0.0.0' ? window.location.hostname : formData.listen_addr}
+SIP 端口: ${formData.sip_port}
+传输协议: ${formData.enable_tls ? 'TLS' : 'UDP'}
 
 账号设置:
 - 用户名: 1001 (在账号管理中创建)
 - 密码: ********
-- 域名: {formData.domain}
+- 域名: ${formData.domain}
 - 认证用户名: 1001 (可选，默认同用户名)
 
 高级设置:
-- Realm: {formData.realm}
-- RTP 端口范围: {formData.rtp_port_start}-{formData.rtp_port_end}
+- Realm: ${formData.realm}
+- RTP 端口范围: ${formData.rtp_port_start}-${formData.rtp_port_end}
 - NAT 穿透: 启用 STUN/ICE
 - 保持连接: 启用 (建议 30 秒)
 

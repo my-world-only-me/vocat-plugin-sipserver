@@ -14,6 +14,7 @@
       "label_zh": "语音仪表",
       "location": "sidebar",
       "after": "devices",
+      "icon": "dashboard",
       "entry": "index.html"
     },
     {
@@ -22,6 +23,7 @@
       "label_zh": "语音账户",
       "location": "sidebar",
       "after": "devices",
+      "icon": "contacts",
       "entry": "accounts.html"
     },
     {
@@ -30,6 +32,7 @@
       "label_zh": "语音设置",
       "location": "sidebar",
       "after": "devices",
+      "icon": "settings",
       "entry": "settings.html"
     },
     {
@@ -38,6 +41,7 @@
       "label_zh": "通话记录",
       "location": "sidebar",
       "after": "devices",
+      "icon": "history",
       "entry": "call-log.html"
     }
   ],

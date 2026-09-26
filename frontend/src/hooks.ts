@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { api, API_BASE, SIPAccount, Call } from './api'
+import { api, PROXY_PREFIX, SIPAccount, Call } from './api'
 
 type WSMessage = {
   type: 'state' | 'event' | 'heartbeat'
@@ -18,7 +18,9 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
 
   const connect = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}${API_BASE}/ws`)
+    // /ws sits outside the backend's /api prefix, so only the proxy prefix
+    // is prepended here.
+    const ws = new WebSocket(`${protocol}//${window.location.host}${PROXY_PREFIX}/ws`)
     
     ws.onopen = () => {
       setConnected(true)

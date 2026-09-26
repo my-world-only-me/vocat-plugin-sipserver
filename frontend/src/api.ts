@@ -1,12 +1,22 @@
 // VoCat reverse-proxies plugin backend traffic under
-// /api/extensions/<plugin-id>/backend/* and strips that prefix before
-// forwarding, so the backend still sees its own /api/... routes.
+// /api/extensions/<plugin-id>/backend/* and strips exactly that prefix before
+// forwarding, so the backend still sees its own routes.
 //
-// Calling "/api" directly would hit the VoCat core server instead, which has
-// no idea about plugin routes and answers 404.
+// Two layers must line up:
+//   browser:  <PROXY_PREFIX>/api/accounts
+//   backend:  /api/accounts          (after VoCat strips PROXY_PREFIX)
+//
+// Calling a bare "/api" would hit the VoCat core server, which owns no plugin
+// routes and answers 404.
 const PLUGIN_ID = 'vocat-sipserver'
 
-export const API_BASE = `/api/extensions/${PLUGIN_ID}/backend`
+// What VoCat strips. Also the prefix for backend routes registered outside
+// /api, such as the /ws upgrade endpoint.
+export const PROXY_PREFIX = `/api/extensions/${PLUGIN_ID}/backend`
+
+// The prefix the plugin backend serves its REST API under, and therefore what
+// the browser must append to the proxy prefix.
+const BACKEND_API_PREFIX = '/api'
 
 class APIError extends Error {
   constructor(public status: number, message: string) {
@@ -16,7 +26,7 @@ class APIError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${PROXY_PREFIX}${BACKEND_API_PREFIX}${path}`, {
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,

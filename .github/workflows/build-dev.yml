@@ -57,7 +57,8 @@ jobs:
         run: |
           echo "Checking that the built bundle targets the proxied backend path..."
           grep -o '/api/extensions/vocat-sipserver/backend' assets/assets/*.js | head -1 \
-            || { echo "ERROR: API base not found in built assets"; exit 1; }
+            || { echo "ERROR: proxy prefix not found in built assets"; exit 1; }
+          echo "OK: bundle routes through the VoCat plugin proxy."
 
       - name: Package plugin zip
         run: |

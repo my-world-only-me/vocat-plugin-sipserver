@@ -1,0 +1,85 @@
+name: Build (arm64 dev)
+
+# Builds a ready-to-install arm64 plugin package from the current branch.
+# Mirrors the packaging layout of release.yml (zip contents at the root, no
+# top-level folder) so the artifact uploads straight into VoCat.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  PLUGIN_ID: vocat-sipserver
+  GO_VERSION: '1.23'
+  NODE_VERSION: '20'
+
+jobs:
+  package:
+    name: Package arm64 plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build backend (linux/arm64)
+        working-directory: backend
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          CGO_ENABLED: '0'
+        run: |
+          go mod tidy
+          go build -trimpath -ldflags="-s -w" -o vocat-sipserver-backend .
+
+      - name: Show resolved frontend API base
+        run: |
+          echo "Checking that the built bundle targets the proxied backend path..."
+          grep -o '/api/extensions/vocat-sipserver/backend' assets/assets/*.js | head -1 \
+            || { echo "ERROR: API base not found in built assets"; exit 1; }
+
+      - name: Package plugin zip
+        run: |
+          set -eu
+          rm -rf dist
+          mkdir -p "dist/${PLUGIN_ID}/backend"
+          cp vocat-plugin.json "dist/${PLUGIN_ID}/"
+          cp backend/vocat-sipserver-backend "dist/${PLUGIN_ID}/backend/vocat-sipserver-backend"
+          cp -r assets/. "dist/${PLUGIN_ID}/"
+          cd "dist/${PLUGIN_ID}"
+          zip -r "../../${PLUGIN_ID}-arm64.zip" .
+          cd ../..
+          sha256sum "${PLUGIN_ID}-arm64.zip" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          echo "--- zip contents ---"
+          unzip -l "${PLUGIN_ID}-arm64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vocat-sipserver-arm64
+          path: |
+            vocat-sipserver-arm64.zip
+            SHA256SUMS.txt
+          retention-days: 30

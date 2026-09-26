@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   return (
     <div className="container">
-      <h1 style={{marginBottom: 24, fontSize: 24, fontWeight: 600}}>SIP 仪表盘</h1>
+      <h1 style={{marginBottom: 24, fontSize: 24, fontWeight: 600}}>语音仪表</h1>
       
       <div className="stats-grid">
         <div className="stat-card">
@@ -214,18 +214,4 @@ function formatDuration(seconds: number) {
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${mins}:${secs.toString().padStart(2, '0')}`
-}
-
-function formatDistanceToNow(date: Date) {
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-  
-  if (diffMins < 1) return '刚刚'
-  if (diffMins < 60) return `${diffMins}分钟前`
-  if (diffHours < 24) return `${diffHours}小时前`
-  if (diffDays < 7) return `${diffDays}天前`
-  return date.toLocaleDateString()
 }

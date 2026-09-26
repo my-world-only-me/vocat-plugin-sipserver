@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -101,6 +102,26 @@ func loadConfig() (*Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+// httpListenAddr resolves the address the HTTP API should bind to.
+//
+// VoCat starts plugin backends with VOCAT_PLUGIN_LISTEN pointing at a free
+// loopback address it allocated, and reverse-proxies
+// /api/extensions/<id>/backend/* to it. Honouring that variable is required
+// for the plugin UI to reach this backend at all; binding a fixed port makes
+// VoCat's proxy dial a socket nobody is listening on (502).
+//
+// The fallback preserves standalone use outside VoCat, where the config
+// file's listen_addr was historically combined with a hardcoded 8080.
+func httpListenAddr(configured string) string {
+	if addr := strings.TrimSpace(os.Getenv("VOCAT_PLUGIN_LISTEN")); addr != "" {
+		return addr
+	}
+	if configured == "" {
+		configured = "0.0.0.0"
+	}
+	return fmt.Sprintf("%s:8080", configured)
 }
 
 func defaultConfig(dataDir string) *Config {
@@ -314,7 +335,7 @@ func (s *Server) runHTTPServer(ctx context.Context) {
 	})
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:8080", s.config.ListenAddr),
+		Addr:    httpListenAddr(s.config.ListenAddr),
 		Handler: mux,
 	}
 

@@ -1,4 +1,12 @@
-const API_BASE = '/api'
+// VoCat reverse-proxies plugin backend traffic under
+// /api/extensions/<plugin-id>/backend/* and strips that prefix before
+// forwarding, so the backend still sees its own /api/... routes.
+//
+// Calling "/api" directly would hit the VoCat core server instead, which has
+// no idea about plugin routes and answers 404.
+const PLUGIN_ID = 'vocat-sipserver'
+
+export const API_BASE = `/api/extensions/${PLUGIN_ID}/backend`
 
 class APIError extends Error {
   constructor(public status: number, message: string) {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { api, SIPAccount, Call } from './api'
+import { api, API_BASE, SIPAccount, Call } from './api'
 
 type WSMessage = {
   type: 'state' | 'event' | 'heartbeat'
@@ -18,7 +18,7 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
 
   const connect = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`)
+    const ws = new WebSocket(`${protocol}//${window.location.host}${API_BASE}/ws`)
     
     ws.onopen = () => {
       setConnected(true)
@@ -112,11 +112,15 @@ export function useAccounts() {
 export function useCalls() {
   const [calls, setCalls] = useState<Call[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchCalls = useCallback(async () => {
     try {
+      setError(null)
       const data = await api.getCalls()
       setCalls(data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load calls')
     } finally {
       setLoading(false)
     }
@@ -126,7 +130,7 @@ export function useCalls() {
     fetchCalls()
   }, [fetchCalls])
 
-  return { calls, loading, refetch: fetchCalls }
+  return { calls, loading, error, refetch: fetchCalls }
 }
 
 export function useSettings() {
@@ -137,6 +141,8 @@ export function useSettings() {
     try {
       const data = await api.getSettings()
       setSettings(data)
+    } catch (e) {
+      console.error('Failed to load settings:', e)
     } finally {
       setLoading(false)
     }
@@ -163,6 +169,8 @@ export function useDevices() {
     try {
       const data = await api.getDevices()
       setDevices(data)
+    } catch (e) {
+      console.error('Failed to load devices:', e)
     } finally {
       setLoading(false)
     }

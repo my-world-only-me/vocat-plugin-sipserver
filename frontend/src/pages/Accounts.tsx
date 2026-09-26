@@ -87,7 +87,7 @@ export default function Accounts() {
   return (
     <div className="container">
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24}}>
-        <h1 style={{fontSize: 24, fontWeight: 600}}>SIP 账号管理</h1>
+        <h1 style={{fontSize: 24, fontWeight: 600}}>语音账户</h1>
         <button className="btn btn-primary" onClick={openCreateModal}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <line x1={12} y1={5} x2={12} y2={19} />

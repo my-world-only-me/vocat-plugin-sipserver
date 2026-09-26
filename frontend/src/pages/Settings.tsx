@@ -50,7 +50,7 @@ export default function Settings() {
 
   return (
     <div className="container">
-      <h1 style={{marginBottom: 24, fontSize: 24, fontWeight: 600}}>SIP 服务器设置</h1>
+      <h1 style={{marginBottom: 24, fontSize: 24, fontWeight: 600}}>语音设置</h1>
 
       {saved && (
         <div className="card" style={{borderColor: 'var(--success)', background: 'rgba(16, 185, 129, 0.05)', marginBottom: 16}}>

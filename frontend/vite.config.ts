@@ -19,8 +19,7 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/api': 'http://localhost:8080',
-      '/ws': 'http://localhost:8080',
+      '/api/extensions/vocat-sipserver/backend': 'http://localhost:8080',
     },
   },
 })

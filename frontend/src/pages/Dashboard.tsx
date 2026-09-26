@@ -73,7 +73,11 @@ export default function Dashboard() {
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">最近通话记录</h2>
-          <a href="/call-log" className="btn btn-sm">查看全部</a>
+          {/* Relative, not "/call-log": this page runs inside an iframe whose
+              src is /plugin-assets/<plugin>/index.html, so a root-absolute
+              link would navigate to the VoCat core app instead of the
+              plugin's own call-log entry. */}
+          <a href="call-log.html" className="btn btn-sm">查看全部</a>
         </div>
         
         {recentCalls.length === 0 ? (

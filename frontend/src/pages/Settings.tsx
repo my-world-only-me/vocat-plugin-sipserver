@@ -1,20 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSettings, useWebSocket } from '../hooks'
+
+const DEFAULT_FORM = {
+  listen_addr: '0.0.0.0',
+  sip_port: 5060,
+  rtp_port_start: 10000,
+  rtp_port_end: 10200,
+  domain: 'vocat.local',
+  realm: 'VoCat SIP',
+  enable_tls: false,
+  tls_cert_path: '',
+  tls_key_path: '',
+}
 
 export default function Settings() {
   const { settings, loading, update } = useSettings()
   const [saved, setSaved] = useState(false)
-  const [formData, setFormData] = useState({
-    listen_addr: '0.0.0.0',
-    sip_port: 5060,
-    rtp_port_start: 10000,
-    rtp_port_end: 10200,
-    domain: 'vocat.local',
-    realm: 'VoCat SIP',
-    enable_tls: false,
-    tls_cert_path: '',
-    tls_key_path: '',
-  })
+  const [formData, setFormData] = useState(DEFAULT_FORM)
+
+  // Seed the form once the backend responds. This used to be a bare
+  // conditional in the render body whose predicate compared the defaults
+  // against themselves; because they matched, it called setFormData during
+  // render, which re-rendered and re-entered the same branch indefinitely
+  // until React bailed out with "Too many re-renders" and unmounted the tree,
+  // leaving a blank page.
+  useEffect(() => {
+    if (!settings) return
+    setFormData((prev) => ({ ...prev, ...settings }))
+  }, [settings])
 
   useWebSocket((event) => {
     if (event === 'settings_updated') {
@@ -41,11 +54,6 @@ export default function Settings() {
         </div>
       </div>
     )
-  }
-
-  // Initialize form data from settings
-  if (settings && Object.keys(formData).every(k => formData[k as keyof typeof formData] === (settings[k as keyof typeof settings] ?? formData[k as keyof typeof formData]))) {
-    setFormData(prev => ({...prev, ...settings}))
   }
 
   return (

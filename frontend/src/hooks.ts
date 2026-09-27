@@ -16,12 +16,32 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
 
+  // Keep the latest handler in a ref instead of a dependency. Call sites pass
+  // an inline arrow function, so its identity changes on every render; wiring
+  // it straight into `connect`'s deps recreated the socket on each render and
+  // produced a connect/close storm that also spammed the server with canceled
+  // session lookups.
+  const onEventRef = useRef(onEvent)
+  useEffect(() => {
+    onEventRef.current = onEvent
+  }, [onEvent])
+
   const connect = useCallback(() => {
+    // Guard against overlapping sockets if a reconnect timer fires while a
+    // previous attempt is still settling.
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.CONNECTING ||
+        wsRef.current.readyState === WebSocket.OPEN)
+    ) {
+      return
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     // /ws sits outside the backend's /api prefix, so only the proxy prefix
     // is prepended here.
     const ws = new WebSocket(`${protocol}//${window.location.host}${PROXY_PREFIX}/ws`)
-    
+
     ws.onopen = () => {
       setConnected(true)
       console.log('WebSocket connected')
@@ -30,8 +50,9 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
     ws.onmessage = (event) => {
       try {
         const msg: WSMessage = JSON.parse(event.data)
-        if (msg.type === 'event' && msg.event && onEvent) {
-          onEvent(msg.event, msg.data)
+        const handler = onEventRef.current
+        if (msg.type === 'event' && msg.event && handler) {
+          handler(msg.event, msg.data)
         }
       } catch (e) {
         console.error('Failed to parse WS message:', e)
@@ -40,6 +61,7 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
 
     ws.onclose = () => {
       setConnected(false)
+      wsRef.current = null
       console.log('WebSocket disconnected, reconnecting...')
       reconnectTimeoutRef.current = setTimeout(connect, 3000)
     }
@@ -49,7 +71,7 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
     }
 
     wsRef.current = ws
-  }, [onEvent])
+  }, [])
 
   useEffect(() => {
     connect()
@@ -57,7 +79,16 @@ export function useWebSocket(onEvent?: (event: string, data: any) => void) {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
       }
-      wsRef.current?.close()
+      const ws = wsRef.current
+      wsRef.current = null
+      // Drop handlers first so the teardown close cannot schedule a reconnect.
+      if (ws) {
+        ws.onclose = null
+        ws.onerror = null
+        ws.onopen = null
+        ws.onmessage = null
+        ws.close()
+      }
     }
   }, [connect])
 
